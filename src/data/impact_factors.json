@@ -1,0 +1,44 @@
+{
+  "battery": {
+    "co2_saved_kg": 2.5,
+    "water_saved_liters": 1200,
+    "metals_recovered_g": 85,
+    "hazards_avoided": "Heavy metals (lead, mercury) kept from soil",
+    "note": "Battery recycling prevents toxic chemicals from contaminating groundwater and recovers valuable lithium and cobalt."
+  },
+  "laptop": {
+    "co2_saved_kg": 15.8,
+    "water_saved_liters": 8500,
+    "metals_recovered_g": 450,
+    "hazards_avoided": "Lead, mercury, cadmium contained safely",
+    "note": "Laptop recycling recovers precious metals and prevents harmful substances from entering the environment."
+  },
+  "smartphone": {
+    "co2_saved_kg": 8.2,
+    "water_saved_liters": 3200,
+    "metals_recovered_g": 180,
+    "hazards_avoided": "Rare earth mining impact reduced",
+    "note": "Smartphone recycling recovers gold, silver, and rare earth elements while reducing mining needs."
+  },
+  "mobile": {
+    "co2_saved_kg": 8.2,
+    "water_saved_liters": 3200,
+    "metals_recovered_g": 180,
+    "hazards_avoided": "Rare earth mining impact reduced",
+    "note": "Mobile phone recycling recovers gold, silver, and rare earth elements while reducing mining needs."
+  },
+  "charger": {
+    "co2_saved_kg": 1.8,
+    "water_saved_liters": 650,
+    "metals_recovered_g": 45,
+    "hazards_avoided": "Plastic and metal waste diverted",
+    "note": "Charger recycling recovers copper and plastics while preventing electronic waste accumulation."
+  },
+  "other": {
+    "co2_saved_kg": 5.0,
+    "water_saved_liters": 2000,
+    "metals_recovered_g": 120,
+    "hazards_avoided": "Various toxic substances contained",
+    "note": "Electronic device recycling helps recover materials and prevents environmental contamination."
+  }
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "fact": "India generates over 3.2 million tonnes of e-waste annually, making it the 3rd largest e-waste producer globally.",
+    "icon": "Globe"
+  },
+  {
+    "id": 2,
+    "fact": "A single smartphone contains over 40 elements including gold, silver, copper, and rare earth metals.",
+    "icon": "Smartphone"
+  },
+  {
+    "id": 3,
+    "fact": "Recycling 1 million laptops saves energy equivalent to electricity used by 3,657 US homes in a year.",
+    "icon": "Laptop"
+  },
+  {
+    "id": 4,
+    "fact": "Lead from old CRT monitors can contaminate groundwater and cause serious health issues if not disposed properly.",
+    "icon": "AlertTriangle"
+  },
+  {
+    "id": 5,
+    "fact": "Lithium batteries can catch fire if damaged or improperly disposed. Always take them to authorized recyclers.",
+    "icon": "Battery"
+  },
+  {
+    "id": 6,
+    "fact": "Only 20% of global e-waste is formally recycled. The rest ends up in landfills or informal recycling.",
+    "icon": "RecycleIcon"
+  },
+  {
+    "id": 7,
+    "fact": "E-waste contains toxic substances but also precious metals worth $57 billion globally if properly recovered.",
+    "icon": "DollarSign"
+  },
+  {
+    "id": 8,
+    "fact": "India's E-Waste Management Rules 2016 mandate Extended Producer Responsibility for electronics manufacturers.",
+    "icon": "Scale"
+  }
+]

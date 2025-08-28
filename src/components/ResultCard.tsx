@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
+import ImpactCard from './ImpactCard';
 
 interface ClassificationResult {
   class: string;
@@ -117,6 +118,9 @@ const ResultCard = ({ result, imageUrl, onNewClassification }: ResultCardProps) 
           </div>
         </div>
       </div>
+
+      {/* Environmental Impact Card */}
+      <ImpactCard deviceClass={result.class} />
 
       {/* Disposal Advice */}
       <Card className="bg-muted/30 border-border">

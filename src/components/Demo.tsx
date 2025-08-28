@@ -1,9 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, Camera, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import ResultCard from './ResultCard';
+import EducationalDrawer from './EducationalDrawer';
+import SessionHistory from './SessionHistory';
+import confetti from 'canvas-confetti';
 
 interface ClassificationResult {
   class: string;
@@ -22,7 +25,54 @@ const Demo = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ClassificationResult | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load drawer state from sessionStorage
+  useEffect(() => {
+    const savedDrawerState = sessionStorage.getItem('educational_drawer_open');
+    if (savedDrawerState === 'true') {
+      setIsDrawerOpen(true);
+    }
+  }, []);
+
+  // Save drawer state to sessionStorage
+  const handleDrawerChange = (open: boolean) => {
+    setIsDrawerOpen(open);
+    sessionStorage.setItem('educational_drawer_open', open.toString());
+  };
+
+  // Trigger confetti for battery classification
+  const triggerConfetti = () => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min: number, max: number) => {
+      return Math.random() * (max - min) + min;
+    };
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
+    }, 250);
+  };
 
   const handleFileSelect = (file: File) => {
     if (file && file.type.startsWith('image/')) {
@@ -97,6 +147,11 @@ const Demo = () => {
       
       const randomResult = mockResults[Math.floor(Math.random() * mockResults.length)];
       setResult(randomResult);
+      
+      // Trigger confetti for battery classification
+      if (randomResult.class === 'battery') {
+        setTimeout(() => triggerConfetti(), 500);
+      }
       
       toast({
         title: "Classification complete!",
@@ -216,18 +271,29 @@ const Demo = () => {
                 )}
               </div>
             ) : (
-              <ResultCard 
-                result={result}
-                imageUrl={previewUrl}
-                onNewClassification={() => {
-                  setResult(null);
-                  setSelectedFile(null);
-                  setPreviewUrl(null);
-                }}
-              />
+              <div className="space-y-6">
+                <ResultCard 
+                  result={result}
+                  imageUrl={previewUrl}
+                  onNewClassification={() => {
+                    setResult(null);
+                    setSelectedFile(null);
+                    setPreviewUrl(null);
+                  }}
+                />
+                
+                {/* Session History */}
+                <SessionHistory currentResult={result} />
+              </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Educational Drawer */}
+        <EducationalDrawer 
+          isOpen={isDrawerOpen}
+          onOpenChange={handleDrawerChange}
+        />
       </div>
     </section>
   );
