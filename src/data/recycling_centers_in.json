@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "name": "Eco Recycling Ltd",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Plot 45, MIDC Industrial Area, Andheri East",
+    "phone": "+91-9876543210",
+    "verified": true,
+    "types": ["battery", "laptop", "mobile", "charger", "other"],
+    "maps": "https://maps.google.com/?q=Eco+Recycling+Ltd+Andheri+Mumbai"
+  },
+  {
+    "id": 2,
+    "name": "Green E-Waste Solutions",
+    "city": "Delhi",
+    "state": "Delhi",
+    "address": "Sector 5, Dwarka Industrial Area",
+    "phone": "+91-9876543211",
+    "verified": true,
+    "types": ["laptop", "mobile", "printer", "monitor"],
+    "maps": "https://maps.google.com/?q=Green+E-Waste+Solutions+Dwarka+Delhi"
+  },
+  {
+    "id": 3,
+    "name": "TechCycle Bangalore",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "Electronic City Phase 1, Hosur Road",
+    "phone": "+91-9876543212",
+    "verified": true,
+    "types": ["battery", "laptop", "mobile", "charger", "tv", "refrigerator"],
+    "maps": "https://maps.google.com/?q=TechCycle+Electronic+City+Bangalore"
+  },
+  {
+    "id": 4,
+    "name": "Chennai Recycle Hub",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "address": "Ambattur Industrial Estate, Red Hills Road",
+    "phone": "+91-9876543213",
+    "verified": false,
+    "types": ["mobile", "charger", "other"],
+    "maps": "https://maps.google.com/?q=Chennai+Recycle+Hub+Ambattur"
+  },
+  {
+    "id": 5,
+    "name": "Kolkata E-Waste Center",
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "address": "Salt Lake Sector V, IT Park Area",
+    "phone": "+91-9876543214",
+    "verified": true,
+    "types": ["laptop", "monitor", "printer", "other"],
+    "maps": "https://maps.google.com/?q=Kolkata+E-Waste+Center+Salt+Lake"
+  },
+  {
+    "id": 6,
+    "name": "Pune Sustainable Tech",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "address": "Hinjewadi Phase 2, Rajiv Gandhi IT Park",
+    "phone": "+91-9876543215",
+    "verified": true,
+    "types": ["battery", "laptop", "mobile", "charger"],
+    "maps": "https://maps.google.com/?q=Pune+Sustainable+Tech+Hinjewadi"
+  },
+  {
+    "id": 7,
+    "name": "Hyderabad Green Solutions",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "address": "HITEC City, Madhapur",
+    "phone": "+91-9876543216",
+    "verified": true,
+    "types": ["laptop", "mobile", "monitor", "tv"],
+    "maps": "https://maps.google.com/?q=Hyderabad+Green+Solutions+HITEC+City"
+  },
+  {
+    "id": 8,
+    "name": "Ahmedabad Eco Park",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
+    "address": "Bopal Industrial Area, SG Highway",
+    "phone": "+91-9876543217",
+    "verified": false,
+    "types": ["battery", "charger", "other"],
+    "maps": "https://maps.google.com/?q=Ahmedabad+Eco+Park+Bopal"
+  },
+  {
+    "id": 9,
+    "name": "Jaipur Tech Recycle",
+    "city": "Jaipur",
+    "state": "Rajasthan",
+    "address": "Malviya Nagar Industrial Area",
+    "phone": "+91-9876543218",
+    "verified": true,
+    "types": ["laptop", "mobile", "printer"],
+    "maps": "https://maps.google.com/?q=Jaipur+Tech+Recycle+Malviya+Nagar"
+  },
+  {
+    "id": 10,
+    "name": "Kochi E-Waste Hub",
+    "city": "Kochi",
+    "state": "Kerala",
+    "address": "Kakkanad InfoPark, Phase 1",
+    "phone": "+91-9876543219",
+    "verified": true,
+    "types": ["battery", "mobile", "charger", "other"],
+    "maps": "https://maps.google.com/?q=Kochi+E-Waste+Hub+InfoPark"
+  }
+]

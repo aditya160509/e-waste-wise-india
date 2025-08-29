@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { MapPin, Download, Flag, RotateCcw, ExternalLink, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { MapPin, Download, Flag, RotateCcw, ExternalLink, AlertCircle, CheckCircle, Info, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
 import ImpactCard from './ImpactCard';
+import SharingButtons from './SharingButtons';
+import FlagCorrectForm from './FlagCorrectForm';
+import impactFactorsData from '@/data/impact_factors.json';
 
 interface ClassificationResult {
   class: string;
@@ -30,6 +33,7 @@ const ResultCard = ({ result, imageUrl, onNewClassification }: ResultCardProps) 
   const [flagReason, setFlagReason] = useState('');
 
   const confidencePercentage = Math.round(result.confidence * 100);
+  const impactData = impactFactorsData[result.class as keyof typeof impactFactorsData];
   
   const getConfidenceColor = () => {
     if (confidencePercentage >= 85) return 'text-primary';
@@ -169,12 +173,25 @@ const ResultCard = ({ result, imageUrl, onNewClassification }: ResultCardProps) 
         </Card>
       )}
 
+      {/* Sharing Buttons */}
+      <div className="mb-6">
+        <h4 className="font-heading font-medium text-foreground mb-3 flex items-center">
+          <Share2 className="mr-2 h-4 w-4 text-primary" />
+          Share Your Results
+        </h4>
+        <SharingButtons 
+          deviceClass={result.class}
+          confidence={result.confidence}
+          co2Saved={impactData?.co2_saved_kg}
+        />
+      </div>
+
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
         <Button 
           onClick={handleDownloadReport}
           variant="outline"
-          className="flex-1"
+          className="flex-1 glass-button hover-lift"
         >
           <Download className="mr-2 h-4 w-4" />
           Download Report (PDF)
@@ -183,56 +200,28 @@ const ResultCard = ({ result, imageUrl, onNewClassification }: ResultCardProps) 
         <Button 
           onClick={() => setShowFlagForm(!showFlagForm)}
           variant="outline"
-          className="flex-1"
+          className="flex-1 glass-button hover-lift"
         >
           <Flag className="mr-2 h-4 w-4" />
-          Flag Result
+          Flag & Correct
         </Button>
         
         <Button 
           onClick={onNewClassification}
-          className="flex-1 bg-gradient-primary hover:opacity-90 text-primary-foreground"
+          className="flex-1 bg-gradient-primary hover:opacity-90 text-primary-foreground hover-lift"
         >
           <RotateCcw className="mr-2 h-4 w-4" />
           New Classification
         </Button>
       </div>
 
-      {/* Flag Form */}
-      {showFlagForm && (
-        <Card className="border-destructive/20 bg-destructive/5">
-          <CardHeader>
-            <CardTitle className="font-heading font-medium text-foreground">
-              Report Incorrect Classification
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <textarea
-              value={flagReason}
-              onChange={(e) => setFlagReason(e.target.value)}
-              placeholder="Please describe what's incorrect about this classification..."
-              className="w-full p-3 border border-border rounded-md font-body text-foreground bg-background resize-none"
-              rows={3}
-            />
-            <div className="flex gap-3">
-              <Button 
-                onClick={handleFlag}
-                size="sm"
-                disabled={!flagReason.trim()}
-              >
-                Submit Report
-              </Button>
-              <Button 
-                onClick={() => setShowFlagForm(false)}
-                variant="outline"
-                size="sm"
-              >
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Flag & Correct Form */}
+      <FlagCorrectForm
+        isOpen={showFlagForm}
+        onClose={() => setShowFlagForm(false)}
+        originalClass={result.class}
+        originalConfidence={result.confidence}
+      />
     </div>
   );
 };

@@ -83,6 +83,10 @@ export default {
 			transitionProperty: {
 				'smooth': 'var(--transition-smooth)',
 			},
+			scale: {
+				'98': '0.98',
+				'103': '1.03',
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
