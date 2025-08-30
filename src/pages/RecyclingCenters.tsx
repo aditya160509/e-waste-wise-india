@@ -141,43 +141,42 @@ const RecyclingCenters = () => {
           initial="hidden"
           animate="visible"
         >
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCenters.map((center) => (
               <motion.div
                 key={center.id}
                 variants={cardVariants}
-                className="glass-card p-6 hover-lift hover-glow group"
-                whileHover={{ scale: 1.01 }}
+                className="glass-card rounded-2xl p-6 group cursor-pointer"
+                whileHover={{ scale: 1.02, y: -4 }}
+                whileTap={{ scale: 0.98 }}
               >
                 {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                      <h3 className="font-heading font-semibold text-lg text-foreground mr-2">
-                        {center.name}
-                      </h3>
-                      {center.verified ? (
-                        <Badge className="bg-primary/10 text-primary border-primary/20">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Verified
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-muted-foreground">
-                          <AlertCircle className="h-3 w-3 mr-1" />
-                          Unverified
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="font-body text-muted-foreground text-sm">
-                      {center.city}, {center.state}
-                    </p>
+                <div className="mb-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="font-heading font-semibold text-lg text-foreground flex-1 leading-tight">
+                      {center.name}
+                    </h3>
+                    {center.verified ? (
+                      <Badge className="bg-primary/10 text-primary border-primary/20 ml-2 flex-shrink-0">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Verified
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground ml-2 flex-shrink-0">
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        Unverified
+                      </Badge>
+                    )}
                   </div>
+                  <p className="font-body text-muted-foreground text-sm">
+                    {center.city}, {center.state}
+                  </p>
                 </div>
 
                 {/* Address */}
                 <div className="flex items-start mb-4">
-                  <MapPin className="h-4 w-4 text-primary mt-1 mr-2 flex-shrink-0" />
-                  <p className="font-body text-sm text-foreground">
+                  <MapPin className="h-4 w-4 text-primary mt-1 mr-3 flex-shrink-0" />
+                  <p className="font-body text-sm text-foreground leading-relaxed">
                     {center.address}
                   </p>
                 </div>
@@ -185,10 +184,10 @@ const RecyclingCenters = () => {
                 {/* Phone */}
                 {center.phone && (
                   <div className="flex items-center mb-4">
-                    <Phone className="h-4 w-4 text-primary mr-2" />
+                    <Phone className="h-4 w-4 text-primary mr-3 flex-shrink-0" />
                     <a 
                       href={`tel:${center.phone}`}
-                      className="font-body text-sm text-primary hover:underline"
+                      className="font-body text-sm text-primary hover:underline transition-colors"
                     >
                       {center.phone}
                     </a>
@@ -196,7 +195,7 @@ const RecyclingCenters = () => {
                 )}
 
                 {/* Device Types */}
-                <div className="mb-4">
+                <div className="mb-6">
                   <p className="font-body text-xs text-muted-foreground mb-2">
                     Accepts:
                   </p>
@@ -214,17 +213,18 @@ const RecyclingCenters = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => window.open(center.maps, '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-1" />
-                    View on Map
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full group/btn"
+                  onClick={() => window.open(center.maps, '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2 group-hover/btn:scale-110 transition-transform" />
+                  View on Map
+                </Button>
+
+                {/* Hover Accent */}
+                <div className="mt-4 h-1 bg-gradient-primary rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
               </motion.div>
             ))}
           </div>
@@ -237,7 +237,7 @@ const RecyclingCenters = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="glass-card p-8 max-w-md mx-auto">
+              <div className="glass-card rounded-2xl p-8 max-w-md mx-auto">
                 <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="font-heading font-medium text-lg text-foreground mb-2">
                   No Centers Found
