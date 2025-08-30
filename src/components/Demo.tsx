@@ -1,12 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, Camera, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Upload, Camera, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import ResultCard from './ResultCard';
 import EducationalDrawer from './EducationalDrawer';
 import SessionHistory from './SessionHistory';
+import ImpactCard from './ImpactCard';
 import confetti from 'canvas-confetti';
+import impactFactors from '@/data/impact_factors.json';
 
 interface ClassificationResult {
   class: string;
@@ -18,15 +23,28 @@ interface ClassificationResult {
     name: string;
     maps: string;
   }>;
+  source: 'dropdown' | 'upload';
+}
+
+interface ImpactData {
+  co2_saved_kg: number;
+  water_saved_liters: number;
+  metals_recovered_g: number;
+  hazards_avoided: string;
+  note: string;
 }
 
 const Demo = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ClassificationResult | null>(null);
+  const [impactData, setImpactData] = useState<ImpactData | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const deviceCategories = Object.keys(impactFactors);
 
   // Load drawer state from sessionStorage
   useEffect(() => {
@@ -104,69 +122,61 @@ const Demo = () => {
     }
   };
 
-  const classifyImage = async (file: File) => {
-    // Mock API call - replace with actual Hugging Face endpoint
+  const processClassification = async (deviceType: string, source: 'dropdown' | 'upload' = 'dropdown') => {
     setIsLoading(true);
     
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, source === 'upload' ? 2000 : 1000));
       
-      // Mock response based on file name or random selection
-      const mockResults = [
-        {
-          class: 'smartphone',
-          confidence: 0.92,
-          rationale: 'Detected smartphone features including screen, camera, and typical form factor.',
-          advice: 'Remove battery if possible. Find authorized e-waste recycler. Data wiping recommended.',
-          suggested_centres: [
-            { city: 'Mumbai', name: 'Mumbai E-waste Recycler', maps: 'https://maps.google.com/?q=Mumbai+e-waste+recycler' },
-            { city: 'Delhi', name: 'Delhi Electronics Recycling', maps: 'https://maps.google.com/?q=Delhi+electronics+recycling' }
-          ]
-        },
-        {
-          class: 'laptop',
-          confidence: 0.87,
-          rationale: 'Identified laptop characteristics including keyboard, screen, and hinge mechanism.',
-          advice: 'Remove hard drive for data security. Contact manufacturer take-back program or authorized recycler.',
-          suggested_centres: [
-            { city: 'Bengaluru', name: 'Bengaluru Tech Recycling', maps: 'https://maps.google.com/?q=Bengaluru+tech+recycling' },
-            { city: 'Chennai', name: 'Chennai E-waste Solutions', maps: 'https://maps.google.com/?q=Chennai+e-waste+solutions' }
-          ]
-        },
-        {
-          class: 'battery',
-          confidence: 0.95,
-          rationale: 'Detected battery features and chemical indicators.',
-          advice: 'HAZARDOUS: Do not dispose in regular trash. Take to battery collection point or authorized e-waste center immediately.',
-          suggested_centres: [
-            { city: 'Kolkata', name: 'Kolkata Battery Recycling', maps: 'https://maps.google.com/?q=Kolkata+battery+recycling' }
-          ]
-        }
-      ];
+      // Get impact data from impact_factors.json
+      const impactKey = deviceType === 'smartphone' ? 'mobile' : deviceType;
+      const impact = impactFactors[impactKey as keyof typeof impactFactors] || impactFactors.other;
+      setImpactData(impact);
       
-      const randomResult = mockResults[Math.floor(Math.random() * mockResults.length)];
-      setResult(randomResult);
+      // Create result based on source
+      const mockResult: ClassificationResult = {
+        class: deviceType,
+        confidence: source === 'dropdown' ? 1.0 : Math.random() * 0.3 + 0.7,
+        rationale: source === 'dropdown' 
+          ? `Selected category: ${deviceType}` 
+          : `Detected ${deviceType} features from uploaded image.`,
+        advice: impact.note,
+        suggested_centres: [
+          { city: 'Mumbai', name: 'Mumbai E-waste Recycler', maps: 'https://maps.google.com/?q=Mumbai+e-waste+recycler' },
+          { city: 'Delhi', name: 'Delhi Electronics Recycling', maps: 'https://maps.google.com/?q=Delhi+electronics+recycling' }
+        ],
+        source
+      };
+      
+      setResult(mockResult);
       
       // Trigger confetti for battery classification
-      if (randomResult.class === 'battery') {
+      if (deviceType === 'battery') {
         setTimeout(() => triggerConfetti(), 500);
       }
       
       toast({
-        title: "Classification complete!",
-        description: `Detected: ${randomResult.class} (${Math.round(randomResult.confidence * 100)}% confidence)`,
+        title: "Processing complete!",
+        description: `${source === 'dropdown' ? 'Selected' : 'Detected'}: ${deviceType} (${Math.round(mockResult.confidence * 100)}% confidence)`,
       });
       
     } catch (error) {
       toast({
-        title: "Classification failed",
-        description: "Please try again with a different image.",
+        title: "Processing failed",
+        description: "Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const classifyImage = async (file: File) => {
+    // Mock classification from image
+    const deviceTypes = ['smartphone', 'laptop', 'battery', 'charger'];
+    const randomDevice = deviceTypes[Math.floor(Math.random() * deviceTypes.length)];
+    await processClassification(randomDevice, 'upload');
   };
 
   const handleClassify = () => {
@@ -175,119 +185,249 @@ const Demo = () => {
     }
   };
 
+  const handleCategorySelect = () => {
+    if (selectedCategory) {
+      processClassification(selectedCategory, 'dropdown');
+    }
+  };
+
   return (
     <section id="demo" className="py-20 bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mb-4">
             Try the Demo
           </h2>
           <p className="font-body text-xl text-muted-foreground">
-            Upload a photo of your electronic device to see AI classification in action
+            Select your device type or upload a photo for AI classification
           </p>
-        </div>
+        </motion.div>
 
-        <Card className="bg-gradient-card shadow-soft-lg border-border">
-          <CardContent className="p-8">
-            {!result ? (
-              <div className="space-y-6">
-                {/* Upload Area */}
-                <div
-                  className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors duration-300 cursor-pointer"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <Card className="glass-card rounded-2xl shadow-soft-lg border-border">
+            <CardContent className="p-8">
+              {!result ? (
+                <div className="space-y-8">
+                  {/* Primary Option: Device Category Dropdown */}
+                  <motion.div 
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                  >
+                    <div className="flex items-center mb-4">
+                      <Zap className="h-5 w-5 text-primary mr-2" />
+                      <h3 className="font-heading font-semibold text-lg text-foreground">
+                        Quick Selection (Recommended)
+                      </h3>
+                    </div>
+                    
+                    <div className="glass-panel p-4 rounded-xl">
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger className="glass-panel border-0 h-12">
+                          <SelectValue placeholder="Select your device type..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {deviceCategories.map(category => (
+                            <SelectItem key={category} value={category}>
+                              {category.charAt(0).toUpperCase() + category.slice(1)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      {selectedCategory && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="mt-4"
+                        >
+                          <Button 
+                            onClick={handleCategorySelect}
+                            disabled={isLoading}
+                            className="bg-gradient-primary hover:opacity-90 text-primary-foreground w-full"
+                          >
+                            {isLoading ? (
+                              <>
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="mr-2 h-5 w-5" />
+                                Get Impact Data
+                              </>
+                            )}
+                          </Button>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+
+                  {/* Divider */}
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="bg-background px-4 text-muted-foreground">or</span>
+                    </div>
+                  </div>
+
+                  {/* Secondary Option: Image Upload */}
+                  <motion.div 
+                    className="space-y-4"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.3 }}
+                  >
+                    <div className="flex items-center mb-4">
+                      <Camera className="h-5 w-5 text-primary mr-2" />
+                      <h3 className="font-heading font-semibold text-lg text-foreground">
+                        AI Photo Classification
+                      </h3>
+                    </div>
+                    
+                    <div
+                      className="glass-panel border-2 border-dashed border-border/50 rounded-xl p-8 text-center hover:border-primary/50 transition-colors duration-300 cursor-pointer"
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                        className="hidden"
+                      />
+                      
+                      {previewUrl ? (
+                        <div className="space-y-4">
+                          <img 
+                            src={previewUrl} 
+                            alt="Selected device"
+                            className="max-h-64 mx-auto rounded-lg shadow-soft-md"
+                          />
+                          <p className="font-body text-muted-foreground">
+                            {selectedFile?.name}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex justify-center">
+                            <div className="bg-muted/50 rounded-full p-4">
+                              <Upload className="h-12 w-12 text-muted-foreground" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="font-body text-lg text-foreground mb-2">
+                              Drag and drop your image here
+                            </p>
+                            <p className="font-body text-muted-foreground">
+                              or click to browse files
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Upload Action Buttons */}
+                    {selectedFile && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col sm:flex-row gap-4 justify-center"
+                      >
+                        <Button 
+                          onClick={handleClassify}
+                          disabled={isLoading}
+                          className="bg-gradient-primary hover:opacity-90 text-primary-foreground"
+                        >
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                              Classifying...
+                            </>
+                          ) : (
+                            <>
+                              <Camera className="mr-2 h-5 w-5" />
+                              Classify Image
+                            </>
+                          )}
+                        </Button>
+                        
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedFile(null);
+                            setPreviewUrl(null);
+                            if (previewUrl) URL.revokeObjectURL(previewUrl);
+                          }}
+                          className="glass-button"
+                        >
+                          Clear Image
+                        </Button>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </div>
+              ) : (
+                <motion.div 
+                  className="space-y-6"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                    className="hidden"
+                  {/* Source Badge */}
+                  <div className="flex justify-center">
+                    <Badge 
+                      className={result.source === 'dropdown' 
+                        ? "bg-primary/10 text-primary border-primary/20" 
+                        : "bg-secondary/10 text-secondary border-secondary/20"
+                      }
+                    >
+                      {result.source === 'dropdown' ? 'From Dropdown Selection' : 'From Uploaded Photo'}
+                    </Badge>
+                  </div>
+                  
+                  <ResultCard 
+                    result={result}
+                    imageUrl={previewUrl}
+                    onNewClassification={() => {
+                      setResult(null);
+                      setImpactData(null);
+                      setSelectedFile(null);
+                      setPreviewUrl(null);
+                      setSelectedCategory('');
+                    }}
                   />
                   
-                  {previewUrl ? (
-                    <div className="space-y-4">
-                      <img 
-                        src={previewUrl} 
-                        alt="Selected device"
-                        className="max-h-64 mx-auto rounded-lg shadow-soft-md"
-                      />
-                      <p className="font-body text-muted-foreground">
-                        {selectedFile?.name}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="flex justify-center">
-                        <div className="bg-muted/50 rounded-full p-4">
-                          <Upload className="h-12 w-12 text-muted-foreground" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="font-body text-lg text-foreground mb-2">
-                          Drag and drop your image here
-                        </p>
-                        <p className="font-body text-muted-foreground">
-                          or click to browse files
-                        </p>
-                      </div>
-                    </div>
+                  {/* Impact Data */}
+                  {impactData && (
+                    <ImpactCard 
+                      deviceClass={result.class}
+                    />
                   )}
-                </div>
-
-                {/* Action Buttons */}
-                {selectedFile && (
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button 
-                      onClick={handleClassify}
-                      disabled={isLoading}
-                      className="bg-gradient-primary hover:opacity-90 text-primary-foreground"
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Classifying...
-                        </>
-                      ) : (
-                        <>
-                          <Camera className="mr-2 h-5 w-5" />
-                          Classify Image
-                        </>
-                      )}
-                    </Button>
-                    
-                    <Button 
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedFile(null);
-                        setPreviewUrl(null);
-                        if (previewUrl) URL.revokeObjectURL(previewUrl);
-                      }}
-                    >
-                      Clear Image
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <ResultCard 
-                  result={result}
-                  imageUrl={previewUrl}
-                  onNewClassification={() => {
-                    setResult(null);
-                    setSelectedFile(null);
-                    setPreviewUrl(null);
-                  }}
-                />
-                
-                {/* Session History */}
-                <SessionHistory currentResult={result} />
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  
+                  {/* Session History */}
+                  <SessionHistory currentResult={result} />
+                </motion.div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Educational Drawer */}
         <EducationalDrawer 

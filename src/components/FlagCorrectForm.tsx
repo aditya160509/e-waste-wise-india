@@ -7,27 +7,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
+import impactFactors from '@/data/impact_factors.json';
 
 interface FlagCorrectFormProps {
   isOpen: boolean;
   onClose: () => void;
-  originalClass: string;
-  originalConfidence: number;
+  originalClass?: string;
+  originalConfidence?: number;
+  title?: string;
 }
 
-const deviceCategories = [
-  'Laptop',
-  'Mobile',
-  'Battery', 
-  'Charger',
-  'Printer',
-  'Monitor',
-  'TV',
-  'Refrigerator',
-  'Other Small Electronics'
-];
+const deviceCategories = Object.keys(impactFactors).map(key => 
+  key.charAt(0).toUpperCase() + key.slice(1)
+);
 
-const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }: FlagCorrectFormProps) => {
+const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence, title = "Flag & Correct Classification" }: FlagCorrectFormProps) => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [reason, setReason] = useState('');
   const [correctedImage, setCorrectedImage] = useState<File | null>(null);
@@ -35,12 +29,12 @@ const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }:
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && (file.type.startsWith('image/') || file.type === 'application/pdf' || file.type.startsWith('text/'))) {
       setCorrectedImage(file);
     } else {
       toast({
         title: "Invalid file",
-        description: "Please select an image file.",
+        description: "Please select an image, PDF, or text file.",
         variant: "destructive"
       });
     }
@@ -60,12 +54,13 @@ const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }:
 
     // Mock API submission - replace with actual webhook/API endpoint
     const submissionData = {
-      originalClass: originalClass,
-      originalConfidence: originalConfidence,
+      originalClass: originalClass || 'unknown',
+      originalConfidence: originalConfidence || 0,
       correctedClass: selectedCategory,
       reason: reason,
       timestamp: new Date().toISOString(),
-      hasImage: !!correctedImage
+      hasImage: !!correctedImage,
+      fileName: correctedImage?.name
     };
 
     try {
@@ -73,7 +68,10 @@ const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }:
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // In real implementation, send to Google Sheets/Airtable webhook:
-      // const response = await fetch('/api/submit-correction', {
+      // const formData = new FormData();
+      // formData.append('data', JSON.stringify(submissionData));
+      // if (correctedImage) formData.append('file', correctedImage);
+      // const response = await fetch('https://webhook-url/submit-correction', {
       //   method: 'POST',
       //   body: formData
       // });
@@ -81,16 +79,16 @@ const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }:
       console.log('Submission data:', submissionData);
       
       toast({
-        title: "Thank you for your feedback!",
-        description: "Your correction helps us improve our AI model.",
+        title: "Thanks! Your input helps us improve.",
+        description: "Your feedback has been submitted successfully.",
       });
 
       // Analytics tracking placeholder
       if (window.gtag) {
         window.gtag('event', 'flag_submission', {
-          original_class: originalClass,
+          original_class: originalClass || 'unknown',
           corrected_class: selectedCategory,
-          confidence: originalConfidence
+          confidence: originalConfidence || 0
         });
       }
 
@@ -101,8 +99,8 @@ const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }:
       onClose();
     } catch (error) {
       toast({
-        title: "Submission failed",
-        description: "Please try again later.",
+        title: "Something went wrong. Please try again.",
+        description: "Unable to submit your feedback at this time.",
         variant: "destructive"
       });
     } finally {
@@ -124,13 +122,14 @@ const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }:
               <CardTitle className="font-heading font-medium text-foreground flex items-center justify-between">
                 <div className="flex items-center">
                   <Flag className="mr-2 h-5 w-5 text-primary" />
-                  Flag & Correct Classification
+                  {title}
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={onClose}
                   className="glass-button h-8 w-8"
+                  aria-label="Close form"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -138,20 +137,36 @@ const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }:
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Current Classification Info */}
-              <div className="glass-panel p-3 rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  Current classification: <span className="font-medium text-foreground">{originalClass}</span> 
-                  ({Math.round(originalConfidence * 100)}% confidence)
-                </p>
-              </div>
+              {originalClass && originalConfidence && (
+                <motion.div 
+                  className="glass-panel p-3 rounded-lg"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <p className="text-sm text-muted-foreground">
+                    Current classification: <span className="font-medium text-foreground">{originalClass}</span> 
+                    ({Math.round(originalConfidence * 100)}% confidence)
+                  </p>
+                </motion.div>
+              )}
 
               {/* Correct Category Dropdown */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Correct device category *
+              <motion.div 
+                className="space-y-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+              >
+                <label className="text-sm font-medium text-foreground" htmlFor="category-select">
+                  Device category *
                 </label>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="glass-panel border-0">
+                  <SelectTrigger 
+                    className="glass-panel border-0 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    id="category-select"
+                    aria-label="Select device category"
+                  >
                     <SelectValue placeholder="Select the correct category..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -162,48 +177,71 @@ const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }:
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </motion.div>
 
               {/* Reason Text Area */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Why is this incorrect? *
+              <motion.div 
+                className="space-y-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: 0.2 }}
+              >
+                <label className="text-sm font-medium text-foreground" htmlFor="reason-input">
+                  Comments/Reason *
                 </label>
                 <Textarea
+                  id="reason-input"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Please describe what's wrong with this classification and any additional context..."
-                  className="glass-panel border-0 resize-none"
+                  placeholder="Please describe the issue or provide additional context..."
+                  className="glass-panel border-0 resize-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   rows={3}
+                  aria-label="Comments or reason for correction"
                 />
-              </div>
+              </motion.div>
 
-              {/* Optional Corrected Image Upload */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Upload a clearer image (optional)
+              {/* Optional File Upload */}
+              <motion.div 
+                className="space-y-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: 0.3 }}
+              >
+                <label className="text-sm font-medium text-foreground" htmlFor="file-upload">
+                  Upload supporting file (optional)
                 </label>
                 <div className="glass-panel p-3 rounded-lg">
                   <Input
+                    id="file-upload"
                     type="file"
-                    accept="image/*"
+                    accept="image/*,application/pdf,text/*"
                     onChange={handleFileChange}
-                    className="border-0 bg-transparent"
+                    className="border-0 bg-transparent focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    aria-label="Upload file (PDF, image, or text)"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Accepts: Images, PDFs, Text files
+                  </p>
                   {correctedImage && (
                     <p className="text-xs text-primary mt-1">
                       ✓ {correctedImage.name} selected
                     </p>
                   )}
                 </div>
-              </div>
+              </motion.div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-2">
+              <motion.div 
+                className="flex gap-3 pt-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: 0.4 }}
+              >
                 <Button 
                   onClick={handleSubmit}
                   disabled={isSubmitting || !selectedCategory || !reason.trim()}
-                  className="bg-gradient-primary hover:opacity-90 text-primary-foreground flex-1"
+                  className="bg-gradient-primary hover:opacity-90 text-primary-foreground flex-1 focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  aria-label="Submit correction"
                 >
                   {isSubmitting ? (
                     <>
@@ -213,18 +251,19 @@ const FlagCorrectForm = ({ isOpen, onClose, originalClass, originalConfidence }:
                   ) : (
                     <>
                       <Send className="mr-2 h-4 w-4" />
-                      Submit Correction
+                      Submit
                     </>
                   )}
                 </Button>
                 <Button 
                   onClick={onClose}
                   variant="outline"
-                  className="glass-button"
+                  className="glass-button focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  aria-label="Cancel"
                 >
                   Cancel
                 </Button>
-              </div>
+              </motion.div>
             </CardContent>
           </Card>
         </motion.div>

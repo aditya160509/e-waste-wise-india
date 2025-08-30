@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Globe, 
@@ -11,11 +12,13 @@ import {
   Droplets, 
   Lightbulb,
   BookOpen,
-  ArrowRight 
+  ArrowRight,
+  Flag 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import FlagCorrectForm from '@/components/FlagCorrectForm';
 import factsData from '@/data/facts_long.json';
 
 const iconMap = {
@@ -59,6 +62,66 @@ const factsSections = [
     bgClass: "bg-background"
   }
 ];
+
+const FlagCorrectFormSection = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  return (
+    <motion.section 
+      className="py-16 bg-background"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: 1.0 }}
+    >
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div 
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 1.1 }}
+        >
+          <h2 className="font-heading font-semibold text-2xl md:text-3xl text-foreground mb-4">
+            Help Us Improve
+          </h2>
+          <p className="font-body text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+            Found incorrect information or have suggestions? Your feedback helps us provide better e-waste education and classification.
+          </p>
+          
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button 
+              onClick={() => setIsFormOpen(true)}
+              variant="outline"
+              size="lg"
+              className="glass-button border-primary/20 hover:border-primary/40"
+            >
+              <Flag className="mr-2 h-5 w-5" />
+              Submit Feedback
+            </Button>
+          </motion.div>
+        </motion.div>
+
+        {/* Flag & Correct Form */}
+        {isFormOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+            className="mt-8"
+          >
+            <FlagCorrectForm 
+              isOpen={isFormOpen}
+              onClose={() => setIsFormOpen(false)}
+              title="Submit Feedback & Corrections"
+            />
+          </motion.div>
+        )}
+      </div>
+    </motion.section>
+  );
+};
 
 const Education = () => {
   const sectionVariants = {
@@ -187,31 +250,43 @@ const Education = () => {
           </motion.section>
         ))}
 
-        {/* Call to Action */}
-        <motion.div 
-          className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 text-center"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+        {/* CTA Section */}
+        <motion.section 
+          className="py-20 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.8 }}
         >
-          <div className="glass-card rounded-2xl p-8">
-            <h2 className="font-heading font-bold text-3xl text-foreground mb-4">
-              Ready to Make a Difference?
-            </h2>
-            <p className="font-body text-muted-foreground mb-8 text-lg">
-              Use our AI-powered classifier to properly identify and recycle your electronic devices.
-            </p>
-            <Button
-              size="lg"
-              className="bg-gradient-primary hover:opacity-90 text-primary-foreground font-medium px-8 py-4 text-lg group"
-              onClick={() => window.location.href = '/#demo'}
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.9 }}
             >
-              Now try classifying your device
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
-            </Button>
+              <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mb-6">
+                Ready to Make a Difference?
+              </h2>
+              <p className="font-body text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Now that you understand the impact, let's help you classify and properly dispose of your electronic devices.
+              </p>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button 
+                  size="lg"
+                  className="bg-gradient-primary hover:opacity-90 text-primary-foreground px-8 py-6 text-lg"
+                  onClick={() => window.location.href = '/demo'}
+                >
+                  <Zap className="mr-2 h-6 w-6" />
+                  Try Device Classification
+                </Button>
+              </motion.div>
+            </motion.div>
           </div>
-        </motion.div>
+        </motion.section>
+
+        <FlagCorrectFormSection />
       </main>
 
       <Footer />
