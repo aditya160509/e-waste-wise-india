@@ -34,7 +34,7 @@ const iconMap = {
   Lightbulb
 };
 
-// Group facts into themed sections
+// Group facts into themed sections - distribute all 10 facts evenly
 const factsSections = [
   {
     title: "Global Perspective",
@@ -42,7 +42,7 @@ const factsSections = [
     bgClass: "bg-background"
   },
   {
-    title: "India Focus",
+    title: "India Focus", 
     facts: factsData.filter(f => [7, 9].includes(f.id)), // Informal sector, Water contamination
     bgClass: "bg-secondary/20"
   },
