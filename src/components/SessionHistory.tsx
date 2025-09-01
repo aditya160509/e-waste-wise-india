@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
-import { History, Trash2, Leaf } from 'lucide-react';
+import { History, Trash2, Leaf, Droplets, Coins, Zap, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
+import impactFactors from '@/data/impact_factors.json';
 
 interface HistoryItem {
   id: string;
   deviceClass: string;
   confidence: number;
   co2Saved: number;
+  waterSaved: number;
+  metalsRecovered: number;
   timestamp: number;
 }
 
@@ -24,7 +27,7 @@ const SessionHistory = ({ currentResult }: SessionHistoryProps) => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   
   const STORAGE_KEY = 'ewaste_history';
-  const MAX_HISTORY_ITEMS = 5;
+  const MAX_HISTORY_ITEMS = 10;
 
   // Load history from localStorage on mount
   useEffect(() => {
@@ -42,25 +45,21 @@ const SessionHistory = ({ currentResult }: SessionHistoryProps) => {
   // Save current result to history
   useEffect(() => {
     if (currentResult) {
-      const impactFactors = {
-        battery: 2.5,
-        laptop: 15.8,
-        smartphone: 8.2,
-        mobile: 8.2,
-        charger: 1.8,
-        other: 5.0
-      };
+      const impactKey = currentResult.class === 'smartphone' ? 'mobile' : currentResult.class;
+      const impactData = impactFactors[impactKey as keyof typeof impactFactors] || impactFactors.other;
 
       const newItem: HistoryItem = {
         id: Date.now().toString(),
         deviceClass: currentResult.class,
         confidence: currentResult.confidence,
-        co2Saved: impactFactors[currentResult.class as keyof typeof impactFactors] || impactFactors.other,
+        co2Saved: impactData.co2_saved_kg,
+        waterSaved: impactData.water_saved_liters,
+        metalsRecovered: impactData.metals_recovered_g,
         timestamp: Date.now()
       };
 
       setHistory(prevHistory => {
-        // Remove duplicates and keep only the latest 5
+        // Remove duplicates and keep only the latest 10
         const filteredHistory = prevHistory.filter(item => item.deviceClass !== newItem.deviceClass);
         const newHistory = [newItem, ...filteredHistory].slice(0, MAX_HISTORY_ITEMS);
         
@@ -144,13 +143,24 @@ const SessionHistory = ({ currentResult }: SessionHistoryProps) => {
                 </Badge>
               </div>
               
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <div className="flex items-center space-x-1">
-                  <Leaf className="h-3 w-3 text-green-600" />
-                  <span className="font-medium">{item.co2Saved}kg CO₂</span>
+              <div className="flex flex-col space-y-2">
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center space-x-1">
+                    <Leaf className="h-3 w-3 text-green-600" />
+                    <span>{item.co2Saved}kg CO₂</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Droplets className="h-3 w-3 text-blue-600" />
+                    <span>{item.waterSaved}L H₂O</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Coins className="h-3 w-3 text-yellow-600" />
+                    <span>{item.metalsRecovered}g metals</span>
+                  </div>
                 </div>
-                <span>•</span>
-                <span>{formatTimestamp(item.timestamp)}</span>
+                <div className="text-xs text-muted-foreground">
+                  {formatTimestamp(item.timestamp)}
+                </div>
               </div>
             </div>
           ))}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Leaf, Droplets, Coins, Shield } from 'lucide-react';
+import { Leaf, Droplets, Coins, Shield, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import impactFactors from '@/data/impact_factors.json';
 
@@ -77,7 +77,7 @@ const ImpactCard = ({ deviceClass }: ImpactCardProps) => {
       <CardHeader>
         <CardTitle className="font-heading font-semibold text-lg text-foreground flex items-center">
           <Shield className="mr-2 h-5 w-5 text-primary" />
-          Environmental Impact
+          Impact of {deviceClass.charAt(0).toUpperCase() + deviceClass.slice(1)}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
