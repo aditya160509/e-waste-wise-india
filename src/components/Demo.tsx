@@ -26,24 +26,16 @@ interface ClassificationResult {
   source: 'dropdown' | 'upload';
 }
 
-interface ImpactData {
-  co2_saved_kg: number;
-  water_saved_liters: number;
-  metals_recovered_g: number;
-  hazards_avoided: string;
-  note: string;
-}
-
 const Demo = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ClassificationResult | null>(null);
-  const [impactData, setImpactData] = useState<ImpactData | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Get all categories dynamically from impact_factors.json
   const deviceCategories = Object.keys(impactFactors);
 
   // Load drawer state from sessionStorage
@@ -131,8 +123,7 @@ const Demo = () => {
       
       // Get impact data from impact_factors.json
       const impactKey = deviceType === 'smartphone' ? 'mobile' : deviceType;
-      const impact = impactFactors[impactKey as keyof typeof impactFactors] || impactFactors.other;
-      setImpactData(impact);
+      const impactData = impactFactors[impactKey as keyof typeof impactFactors] || impactFactors.other;
       
       // Create result based on source
       const mockResult: ClassificationResult = {
@@ -141,7 +132,7 @@ const Demo = () => {
         rationale: source === 'dropdown' 
           ? `Selected category: ${deviceType}` 
           : `Detected ${deviceType} features from uploaded image.`,
-        advice: impact.note,
+        advice: impactData.note,
         suggested_centres: [
           { city: 'Mumbai', name: 'Mumbai E-waste Recycler', maps: 'https://maps.google.com/?q=Mumbai+e-waste+recycler' },
           { city: 'Delhi', name: 'Delhi Electronics Recycling', maps: 'https://maps.google.com/?q=Delhi+electronics+recycling' }
@@ -173,9 +164,8 @@ const Demo = () => {
   };
 
   const classifyImage = async (file: File) => {
-    // Mock classification from image
-    const deviceTypes = ['smartphone', 'laptop', 'battery', 'charger'];
-    const randomDevice = deviceTypes[Math.floor(Math.random() * deviceTypes.length)];
+    // Mock classification from image - use available categories
+    const randomDevice = deviceCategories[Math.floor(Math.random() * deviceCategories.length)];
     await processClassification(randomDevice, 'upload');
   };
 
@@ -384,6 +374,7 @@ const Demo = () => {
                   </motion.div>
                 </div>
               ) : (
+                // Single clean results block - no duplicates
                 <motion.div 
                   className="space-y-6"
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -402,26 +393,24 @@ const Demo = () => {
                     </Badge>
                   </div>
                   
+                  {/* Single ResultCard displaying classification results */}
                   <ResultCard 
                     result={result}
                     imageUrl={previewUrl}
                     onNewClassification={() => {
                       setResult(null);
-                      setImpactData(null);
                       setSelectedFile(null);
                       setPreviewUrl(null);
                       setSelectedCategory('');
                     }}
                   />
                   
-                  {/* Impact Data */}
-                  {impactData && (
-                    <ImpactCard 
-                      deviceClass={result.class}
-                    />
-                  )}
+                  {/* Single ImpactCard displaying environmental impact */}
+                  <ImpactCard 
+                    deviceClass={result.class}
+                  />
                   
-                  {/* Session History */}
+                  {/* Session History - prevents duplicates internally */}
                   <SessionHistory currentResult={result} />
                 </motion.div>
               )}
