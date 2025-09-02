@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Leaf, Droplets, Coins, Shield, Zap } from 'lucide-react';
+import { Leaf, Droplets, Coins, Shield, Zap, IndianRupee, Battery } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import impactFactors from '@/data/impact_factors.json';
 
@@ -11,7 +11,9 @@ const ImpactCard = ({ deviceClass }: ImpactCardProps) => {
   const [animatedValues, setAnimatedValues] = useState({
     co2: 0,
     water: 0,
-    metals: 0
+    metals: 0,
+    energy: 0,
+    monetary: 0
   });
 
   const impactData = impactFactors[deviceClass as keyof typeof impactFactors] || impactFactors.other;
@@ -32,9 +34,11 @@ const ImpactCard = ({ deviceClass }: ImpactCardProps) => {
       const easeOutQuart = 1 - Math.pow(1 - progress, 4);
       
       setAnimatedValues({
-        co2: Math.round(impactData.co2_saved_kg * easeOutQuart * 10) / 10,
-        water: Math.round(impactData.water_saved_liters * easeOutQuart),
-        metals: Math.round(impactData.metals_recovered_g * easeOutQuart)
+        co2: Math.round((impactData.co2_saved_kg || 0) * easeOutQuart * 10) / 10,
+        water: Math.round((impactData.water_saved_liters || 0) * easeOutQuart),
+        metals: Math.round((impactData.metals_recovered_g || 0) * easeOutQuart),
+        energy: Math.round(((impactData as any).energy_saved_kwh || 0) * easeOutQuart * 10) / 10,
+        monetary: Math.round(((impactData as any).monetary_value_inr || 0) * easeOutQuart)
       });
       
       if (currentStep >= steps) {
@@ -45,8 +49,9 @@ const ImpactCard = ({ deviceClass }: ImpactCardProps) => {
     return () => clearInterval(timer);
   }, [impactData]);
 
+  // Build metrics array dynamically based on available data
   const impactMetrics = [
-    {
+    impactData.co2_saved_kg && {
       icon: Leaf,
       label: 'CO₂ Saved',
       value: animatedValues.co2,
@@ -54,7 +59,7 @@ const ImpactCard = ({ deviceClass }: ImpactCardProps) => {
       color: 'text-green-600',
       bgColor: 'bg-green-50'
     },
-    {
+    impactData.water_saved_liters && {
       icon: Droplets,
       label: 'Water Saved',
       value: animatedValues.water,
@@ -62,15 +67,31 @@ const ImpactCard = ({ deviceClass }: ImpactCardProps) => {
       color: 'text-blue-600',
       bgColor: 'bg-blue-50'
     },
-    {
+    impactData.metals_recovered_g && {
       icon: Coins,
       label: 'Metals Recovered',
       value: animatedValues.metals,
       unit: 'g',
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50'
+    },
+    (impactData as any).energy_saved_kwh && {
+      icon: Zap,
+      label: 'Energy Saved',
+      value: animatedValues.energy,
+      unit: 'kWh',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50'
+    },
+    (impactData as any).monetary_value_inr && {
+      icon: IndianRupee,
+      label: 'Monetary Value',
+      value: animatedValues.monetary,
+      unit: '₹',
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50'
     }
-  ];
+  ].filter(Boolean); // Remove null/undefined entries
 
   return (
     <Card className="bg-gradient-card border-border shadow-soft-md">
