@@ -19,6 +19,10 @@ interface ClassificationResult {
   confidence: number;
   rationale: string;
   advice: string;
+  co2_saved_kg: number;
+  water_saved_liters: number;
+  metals_recovered_g: number;
+  hazards_avoided: string;
   suggested_centres: Array<{
     id: number;
     name: string;
@@ -99,17 +103,21 @@ const Demo = () => {
       const impactKey = deviceType === 'smartphone' ? 'mobile' : deviceType;
       const impactData = impactFactors[impactKey as keyof typeof impactFactors] || impactFactors.other;
       
-      // Filter recycling centers that accept this device type
+      // Filter recycling centers that accept this device type - show ALL matches
       const matchingCenters = recyclingCenters.filter(center => 
         center.types.includes(deviceType) || center.types.includes('other')
       );
       
-      // Create result
+      // Create result with ALL fields from impact_factors.json
       const mockResult: ClassificationResult = {
         class: deviceType,
         confidence: 1.0,
         rationale: `Selected category: ${deviceType}`,
         advice: impactData.note,
+        co2_saved_kg: impactData.co2_saved_kg,
+        water_saved_liters: impactData.water_saved_liters,
+        metals_recovered_g: impactData.metals_recovered_g,
+        hazards_avoided: impactData.hazards_avoided,
         suggested_centres: matchingCenters,
         source: 'dropdown'
       };
